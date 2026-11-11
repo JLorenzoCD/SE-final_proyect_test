@@ -19,7 +19,9 @@ volatile bool hcsr04_is_measurement = false;
 
 // Funciones externas
 BSP_State BSP_Init(Distancia* medidor_distancia, Motor* motor) {
-	HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
+	if (HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1) != HAL_OK) {
+		return BSP_ERROR;
+	}
 
 	// Se inicializa el medidor de distancia
 	hcsr04_medidor_dist.htim = &htim2;
@@ -40,84 +42,64 @@ BSP_State BSP_Init(Distancia* medidor_distancia, Motor* motor) {
 }
 
 // Funciones utilizadas para el servomotor SG90
-BSP_State BSP_MOTOR_Update(Motor motor) {
-	if (motor == NULL) return BSP_ERROR_ARG;
-
+void BSP_MOTOR_Update(Motor motor) {
 	SG90_Update_Angle((SG90_HandleTypeDef*)motor);
-	return BSP_OK;
 }
 
-BSP_State BSP_MOTOR_IsMoving(Motor motor, bool* is_moving) {
-	if (motor == NULL) return BSP_ERROR_ARG;
-
-	*is_moving = ((SG90_HandleTypeDef*)motor)->is_moving;
-	return BSP_OK;
+bool BSP_MOTOR_IsMoving(Motor motor) {
+	bool is_moving = ((SG90_HandleTypeDef*)motor)->is_moving;
+	return is_moving;
 }
 
-BSP_State BSP_MOTOR_SetAngle(Motor motor, uint16_t angle, uint16_t speed_ms) {
-	if (motor == NULL) return BSP_ERROR_ARG;
-
+void BSP_MOTOR_SetAngle(Motor motor, uint16_t angle, uint16_t speed_ms) {
 	SG90_Set_Angle_Target((SG90_HandleTypeDef*)motor, angle, speed_ms);
-	return BSP_OK;
 }
 
 // Funciones utilizadas para el medidor de distancia ultrasonico HC-SR04
-BSP_State BSP_DISTANCIA_CanMeasure(Distancia medidor_distancia, bool* can_measure) {
-	if (medidor_distancia == NULL) return BSP_ERROR_ARG;
-
-	*can_measure = !hcsr04_is_measurement &&
+bool BSP_DISTANCIA_CanMeasure(Distancia medidor_distancia) {
+	bool can_measure = !hcsr04_is_measurement &&
 			(HAL_GetTick() - hcsr04_last_tick_read > HCSR04_MEASUREMENT_INTERVAL_MS);
 
-	return BSP_OK;
+	return can_measure;
 }
 
-BSP_State BSP_DISTANCIA_StartMeasurement(Distancia medidor_distancia) {
-	if (medidor_distancia == NULL) return BSP_ERROR_ARG;
-
+void BSP_DISTANCIA_StartMeasurement(Distancia medidor_distancia) {
 	hcsr04_is_measurement = 1;
 	hcsr04_start_measurement((HCSR04_HandleTypeDef*)medidor_distancia);
-
-	return BSP_OK;
 }
 
-BSP_State BSP_DISTANCIA_IsDataRedy(Distancia medidor_distancia, bool* is_data_ready) {
-	if (medidor_distancia == NULL) return BSP_ERROR_ARG;
+bool BSP_DISTANCIA_IsDataRedy(Distancia medidor_distancia) {
+	bool is_data_ready = hcsr04_is_data_ready((HCSR04_HandleTypeDef*)medidor_distancia);
 
-	*is_data_ready = hcsr04_is_data_ready((HCSR04_HandleTypeDef*)medidor_distancia);
-
-	return BSP_OK;
+	return is_data_ready;
 }
 
-BSP_State BSP_DISTANCIA_GetDistance(Distancia medidor_distancia, float* distancia_cm) {
-	if (medidor_distancia == NULL) return BSP_ERROR_ARG;
-
+float BSP_DISTANCIA_GetDistance(Distancia medidor_distancia) {
 	hcsr04_is_measurement = 0;
 	hcsr04_last_tick_read = HAL_GetTick();
 
-	*distancia_cm = hcsr04_get_distance_cm((HCSR04_HandleTypeDef*)medidor_distancia);
+	float distancia_cm = hcsr04_get_distance_cm((HCSR04_HandleTypeDef*)medidor_distancia);
 
-	return BSP_OK;
+	return distancia_cm;
 }
 
-BSP_State BSP_DISTANCIA_IsTimeout(Distancia medidor_distancia, bool* is_timeout) {
-	if (medidor_distancia == NULL) return BSP_ERROR_ARG;
-
-	*is_timeout = hcsr04_is_measurement
+bool BSP_DISTANCIA_IsTimeout(Distancia medidor_distancia) {
+	bool is_timeout = hcsr04_is_measurement
 			&& (HAL_GetTick() - hcsr04_last_tick_read > HCSR04_TIMEOUT_ECO_MS);
 
-	return BSP_OK;
+	return is_timeout;
 }
 
 BSP_State BSP_DISTANCIA_Reset(Distancia medidor_distancia) {
-	if (medidor_distancia == NULL) return BSP_ERROR_ARG;
-
 	hcsr04_is_measurement = 0;
 	hcsr04_last_tick_read = HAL_GetTick();
 
 	// Limpiar channel del timer
 	TIM_HandleTypeDef* 	htim =((HCSR04_HandleTypeDef*)medidor_distancia)->htim;
 	uint32_t            chanel = ((HCSR04_HandleTypeDef*)medidor_distancia)->IC_Channel;
-	HAL_TIM_IC_Stop_IT(htim, chanel);
+	if (HAL_TIM_IC_Stop_IT(htim, chanel) != HAL_OK) {
+		return BSP_ERROR;
+	}
 
 	return BSP_OK;
 }
