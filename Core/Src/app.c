@@ -34,6 +34,7 @@ void APP_Init() {
 	}
 
 	PID_Init(&APP_pid, 1.2f, 0.05f, 0.4f, 0.02f, 0.0f, 180.0f, -30.0f, 30.0f);
+	APP_pid.target = 20.0f; // Supongamos que esta es la distancia hasta el centro
 }
 
 void APP_Run() {
