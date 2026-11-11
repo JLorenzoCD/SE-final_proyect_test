@@ -16,24 +16,22 @@ typedef enum
 
 BSP_State BSP_Init(Distancia* medidor_distancia, Motor* motor);
 
-BSP_State BSP_MOTOR_Update(Motor* motor);
+BSP_State BSP_MOTOR_Update(Motor motor);
 
-BSP_State BSP_MOTOR_IsMoving(Motor* motor, bool* is_moving);
+BSP_State BSP_MOTOR_IsMoving(Motor motor, bool* is_moving);
 
-BSP_State BSP_MOTOR_SetAngle(Motor* motor, uint16_t angle, uint16_t speed_ms);
+BSP_State BSP_MOTOR_SetAngle(Motor motor, uint16_t angle, uint16_t speed_ms);
 
-BSP_State BSP_DISTANCIA_CanMeasure(Distancia* medidor_distancia, bool* can_measure);
+BSP_State BSP_DISTANCIA_CanMeasure(Distancia medidor_distancia, bool* can_measure);
 
-BSP_State BSP_DISTANCIA_StartMeasurement(Distancia* medidor_distancia);
+BSP_State BSP_DISTANCIA_StartMeasurement(Distancia medidor_distancia);
 
-BSP_State BSP_DISTANCIA_IsDataRedy(Distancia* medidor_distancia, bool* is_data_redy);
+BSP_State BSP_DISTANCIA_IsDataRedy(Distancia medidor_distancia, bool* is_data_ready);
 
-BSP_State BSP_DISTANCIA_GetDistance(Distancia* medidor_distancia, float* distancia_cm);
+BSP_State BSP_DISTANCIA_GetDistance(Distancia medidor_distancia, float* distancia_cm);
 
-BSP_State BSP_DISTANCIA_IsTimeout(Distancia* medidor_distancia, bool* is_timeout);
+BSP_State BSP_DISTANCIA_IsTimeout(Distancia medidor_distancia, bool* is_timeout);
 
-BSP_State BSP_DISTANCIA_Reset(Distancia* medidor_distancia);
-
-extern void APP_GetSensors(Distancia* medidor_distancia, Motor* motor);
+BSP_State BSP_DISTANCIA_Reset(Distancia medidor_distancia);
 
 #endif /* __BSP_H */
