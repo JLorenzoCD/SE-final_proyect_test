@@ -1,5 +1,7 @@
 #include "app.h"
 
+#define APP_MOTOR_DELAY_IN_MS_PER_DEGREE 10
+
 typedef struct {
     float kp;
     float ki;
@@ -24,50 +26,75 @@ Motor APP_motor = NULL;
 Distancia APP_distancia = NULL;
 PID_Controller APP_pid;
 
+void PID_Init(PID_Controller *pid,
+		float kp, float ki, float kd,
+		float dt,
+		float out_min, float out_max,
+		float integral_min, float integral_max
+		);
+void PID_SetTarget(PID_Controller *pid, float target);
 float PID_Compute(PID_Controller *pid, float current_position);
 
 void APP_Init() {
-	if (BSP_Init(&APP_distancia, &APP_motor) != BSP_OK) {
+	if (BSP_Init() != BSP_OK) {
 		// Error
 	}
 
-	// Distancia hasta el centro
-	APP_pid.target = 20.0f; // Supongamos que esta a 20cm
+	PID_Init(&APP_pid,
+			1.2f, 0.05f, 0.4f,
+			0.02f,
+			0.0, 180.0f,
+			-30.0f, 30.0f
+	);
 
+	// Distancia hasta el centro
+	PID_SetTarget(&APP_pid, 20.0f);
+}
+
+void APP_Run() {
+	BSP_MOTOR_Update();
+
+	if (BSP_DISTANCIA_CanMeasure()) {
+		BSP_DISTANCIA_StartMeasurement();
+
+	} else if (BSP_DISTANCIA_IsDataRedy()) {
+		float distancia_cm = BSP_DISTANCIA_GetDistance();
+		float salida_motor = PID_Compute(&APP_pid, distancia_cm);
+		BSP_MOTOR_SetAngle((uint16_t)salida_motor, APP_MOTOR_DELAY_IN_MS_PER_DEGREE);
+
+	} else if (BSP_DISTANCIA_IsTimeout()) {
+		BSP_DISTANCIA_Reset();
+	}
+}
+
+void PID_Init(PID_Controller *pid,
+		float kp, float ki, float kd,
+		float dt,
+		float out_min, float out_max,
+		float integral_min, float integral_max
+		) {
 	// Default
 	APP_pid.integral = 0.0f;
 	APP_pid.prev_error = 0.0f;
 
-	// Tengo que probar
-	APP_pid.kp = 1.2f;
-	APP_pid.ki = 0.05f;
-	APP_pid.kd = 0.4f;
+	// Constantes de proporcionalidad
+	APP_pid.kp = kp;
+	APP_pid.ki = ki;
+	APP_pid.kd = kd;
 
-	APP_pid.dt = 0.02f;
+	// Tiempo de muestreo
+	APP_pid.dt = dt;
 
 	// Limites
-	APP_pid.out_min = 0.0f;
-	APP_pid.out_max = 180.0f;
-	APP_pid.integral_min = -30.0f;
-	APP_pid.integral_max = 30.0f;
+	APP_pid.out_min = out_min;
+	APP_pid.out_max = out_max;
+	APP_pid.integral_min = integral_min;
+	APP_pid.integral_max = integral_max;
 }
 
-void APP_Run() {
-	BSP_MOTOR_Update(APP_motor);
-
-	if (BSP_DISTANCIA_CanMeasure(APP_distancia)) {
-		BSP_DISTANCIA_StartMeasurement(APP_distancia);
-
-	} else if (BSP_DISTANCIA_IsDataRedy(APP_distancia)) {
-		float distancia_cm = BSP_DISTANCIA_GetDistance(APP_distancia);
-		float salida_motor = PID_Compute(&APP_pid, distancia_cm);
-		BSP_MOTOR_SetAngle(APP_motor, (uint16_t)salida_motor, 10);
-
-	} else if (BSP_DISTANCIA_IsTimeout(APP_distancia)) {
-		BSP_DISTANCIA_Reset(APP_distancia);
-	}
+void PID_SetTarget(PID_Controller *pid, float target) {
+	pid->target = target;
 }
-
 
 float PID_Compute(PID_Controller *pid, float curr_position) {
 	// Error actual

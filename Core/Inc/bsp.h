@@ -14,24 +14,24 @@ typedef enum
   BSP_ERROR
 }BSP_State;
 
-BSP_State BSP_Init(Distancia* medidor_distancia, Motor* motor);
+BSP_State BSP_Init();
 
-void BSP_MOTOR_Update(Motor motor);
+void BSP_MOTOR_Update();
 
-bool BSP_MOTOR_IsMoving(Motor motor);
+bool BSP_MOTOR_IsMoving();
 
-void BSP_MOTOR_SetAngle(Motor motor, uint16_t angle, uint16_t speed_ms);
+void BSP_MOTOR_SetAngle(uint16_t angle, uint16_t speed_ms);
 
-bool BSP_DISTANCIA_CanMeasure(Distancia medidor_distancia);
+bool BSP_DISTANCIA_CanMeasure();
 
-void BSP_DISTANCIA_StartMeasurement(Distancia medidor_distancia);
+void BSP_DISTANCIA_StartMeasurement();
 
-bool BSP_DISTANCIA_IsDataRedy(Distancia medidor_distancia);
+bool BSP_DISTANCIA_IsDataRedy();
 
-float BSP_DISTANCIA_GetDistance(Distancia medidor_distancia);
+float BSP_DISTANCIA_GetDistance();
 
-bool BSP_DISTANCIA_IsTimeout(Distancia medidor_distancia);
+bool BSP_DISTANCIA_IsTimeout();
 
-BSP_State BSP_DISTANCIA_Reset(Distancia medidor_distancia);
+BSP_State BSP_DISTANCIA_Reset();
 
 #endif /* __BSP_H */
