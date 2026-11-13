@@ -20,7 +20,7 @@ void BSP_MOTOR_Update();
 
 bool BSP_MOTOR_IsMoving();
 
-void BSP_MOTOR_SetAngle(uint16_t angle, uint16_t speed_ms);
+void BSP_MOTOR_SetAngle(uint16_t angle);
 
 bool BSP_DISTANCIA_CanMeasure();
 
