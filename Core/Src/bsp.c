@@ -12,8 +12,8 @@
 extern Motor APP_motor;
 extern Distancia APP_distancia;
 
-#define HCSR04_MEASUREMENT_INTERVAL_MS 20
-#define HCSR04_TIMEOUT_ECO_MS 40
+#define HCSR04_MEASUREMENT_INTERVAL_MS 60
+#define HCSR04_TIMEOUT_ECO_MS 80
 
 #define SG90_MAX_ANGLE 180
 #define SG90_PWM_MIN_PULSE 500

@@ -3,6 +3,7 @@
 
 #include "bsp.h"
 #include "pid.h"
+#include "utils.h"
 
 Motor APP_motor = NULL;
 Distancia APP_distancia = NULL;
@@ -13,7 +14,7 @@ int main(void) {
 
 	PID_Init(&APP_pid,
 			1.2f, 0.05f, 0.4f,
-			0.02f,
+			0.06f,
 			0.0, 180.0f,
 			-30.0f, 30.0f
 	);
@@ -28,12 +29,15 @@ int main(void) {
 
 		} else if (BSP_DISTANCIA_IsDataRedy()) {
 			float distancia_cm = BSP_DISTANCIA_GetDistance();
-			float salida_motor = PID_Compute(&APP_pid, distancia_cm);
+			float salida_motor = PID_Compute(
+				&APP_pid,
+				filter_distance_cm(distancia_cm)
+			);
 			BSP_MOTOR_SetAngle((uint16_t)salida_motor);
 
 		} else if (BSP_DISTANCIA_IsTimeout()) {
 			BSP_DISTANCIA_Reset();
+			filter_reset();
 		}
 	}
 }
-
