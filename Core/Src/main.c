@@ -15,7 +15,7 @@ int main(void) {
 	PID_Init(&APP_pid,
 			1.2f, 0.05f, 0.4f,
 			0.06f,
-			0.0, 180.0f,
+			0.0f, 180.0f,
 			-30.0f, 30.0f
 	);
 	// Distancia hasta el centro
